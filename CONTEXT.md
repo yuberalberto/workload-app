@@ -1,31 +1,31 @@
-# Contexto de sesión — workload_app
+# Session context — workload_app
 
-## Qué estamos construyendo
-Una CLI en Python que lee PDFs de órdenes de producción, extrae datos de material, y devuelve un score de carga laboral (low/medium/high/critical).
+## What we are building
+A Python CLI that reads PDFs from production orders, extracts material data, and returns a workload score (low/medium/high/critical).
 
-## Contexto del negocio
-El usuario produce moldes EPS para casting de concreto de manholes. Cada PDF representa una orden con:
-- **Puck** — la pieza principal. Tiene un campo `EPSØxH` con dos valores: diámetro y height. El height es lo que suma al total de material.
-- **Holeformers** — piezas pequeñas (inlet/outlet). Aparecen en el campo `Connectionstype` con formato `525-21"Concrete` o `200-8"PVCSDR`. Solo importa el número y el tipo (PVC o Concrete).
+## Business context
+The user produces EPS molds for concrete manhole casting. Each PDF represents an order with:
+- **Puck** — the main piece. Has an `EPSØxH` field with two values: diameter and height. The height is what adds to the total material.
+- **Holeformers** — small pieces (inlet/outlet). They appear in the `Connectionstype` field with format `525-21"Concrete` or `200-8"PVCSDR`. Only the number and type (PVC or Concrete) matter.
 
-**PDFs reales en:** `C:\Users\yuber\OneDrive\Documents\kuka\Incoming Orders\today\`
-Los PDFs del día se ponen manualmente en la carpeta `today\` para simular la asignación de trabajo.
+**Real PDFs at:** `C:\Users\yuber\OneDrive\Documents\kuka\Incoming Orders\today\`
+The day's PDFs are placed manually in the `today\` folder to simulate work assignment.
 
-## Estructura de archivos
+## File structure
 ```
 src/workload_app/
-    __init__.py           — vacío, marca el paquete
-    pdf_extract.py        — extrae datos del PDF (eps_height + holeformers)
-    scoring.py            — recibe total mm y devuelve nivel de carga
-    holeformers_chart.py  — tabla de conversión de holeformers
-    cli.py                — coordina todo, muestra resultado
+    __init__.py           — empty, marks the package
+    pdf_extract.py        — extracts data from the PDF (eps_height + holeformers)
+    scoring.py            — receives total mm and returns workload level
+    holeformers_chart.py  — holeformer conversion table
+    cli.py                — coordinates everything, displays result
 tests/
-    explore_pdf.py        — archivo scratch para exploración/testing
+    explore_pdf.py        — scratch file for exploration/testing
 ```
 
-## Estado actual de cada archivo
+## Current state of each file
 
-### scoring.py — COMPLETO
+### scoring.py — COMPLETE
 ```python
 def get_score(total):
     if total < 5000:        return "low"
@@ -34,7 +34,7 @@ def get_score(total):
     else:                   return "critical"
 ```
 
-### pdf_extract.py — COMPLETO
+### pdf_extract.py — COMPLETE
 ```python
 import pdfplumber
 import re
@@ -50,19 +50,19 @@ def extract_puck_data(file_path):
                 holeformers = re.findall(r'(\d+)-\d+"\s*(PVC|Concrete)', line, re.IGNORECASE)
         return eps_height, holeformers
 ```
-Devuelve tupla: `(849.5, [('600', 'Concrete'), ('200', 'PVC')])`
+Returns tuple: `(849.5, [('600', 'Concrete'), ('200', 'PVC')])`
 
-### holeformers_chart.py — COMPLETO
-Diccionario `HOLEFORMERS_CHART` con clave `("size", "type")` → `{"length": mm, "per_sheet": n}`
-- `length`: grosor de lámina EPS en mm
-- `per_sheet`: cuántos holeformers salen de una lámina
+### holeformers_chart.py — COMPLETE
+Dictionary `HOLEFORMERS_CHART` with key `("size", "type")` → `{"length": mm, "per_sheet": n}`
+- `length`: EPS sheet thickness in mm
+- `per_sheet`: how many holeformers come from one sheet
 
-Lógica de lotes: si necesito 5 holeformers de 300 PVC (per_sheet=4), necesito 2 láminas → 600mm aunque sobren 3.
-Fórmula: `sheets = math.ceil(count / per_sheet)`, `material = sheets * length`
+Batch logic: if I need 5 holeformers of 300 PVC (per_sheet=4), I need 2 sheets → 600mm even if 3 are left over.
+Formula: `sheets = math.ceil(count / per_sheet)`, `material = sheets * length`
 
-### cli.py — COMPLETO
+### cli.py — COMPLETE
 ```python
-"""Procesa archivos PDF de órdenes entrantes y calcula métricas de EPS y holeformers."""
+"""Processes incoming order PDF files and calculates EPS and holeformer metrics."""
 
 from pathlib import Path
 from math import ceil
@@ -74,7 +74,7 @@ today_dir = Path(r"C:\Users\yuber\OneDrive\Documents\kuka\Incoming Orders\today"
 pdf_files = today_dir.glob("*.pdf")
 
 def main():
-    """Procesa los PDF de today y calcula el total de EPS y el score."""
+    """Processes today's PDFs and calculates total EPS and score."""
     total_eps = 0
     total_pieces = 0
     holeformer_counts = {}
@@ -104,18 +104,18 @@ if __name__ == "__main__":
     main()
 ```
 
-Correr con: `cd src && ../.venv/Scripts/python.exe -m workload_app.cli`
+Run with: `cd src && ../.venv/Scripts/python.exe -m workload_app.cli`
 
-## Próximo paso
-Mejorar el output para que sea más legible (actualmente imprime raw).
+## Next step
+Improve the output to make it more readable (currently prints raw).
 
-## Pendiente para más adelante
-- Cálculo de tiempo de torneado por tipo de puck (segunda dimensión del workload)
-- UI con file picker (actualmente se usa carpeta `today\` como simulación)
-- `pyproject.toml` y `pip install -e .` para resolver el problema de imports
-- Convertir a `.exe` con PyInstaller (incluir GUI con tkinter)
-- Compatibilidad con Windows 7: evaluar si usar Python 3.8 para generar el `.exe`
-- Optimización de cortes: dado bloques de 2400mm y 20mm de exceso por corte, calcular orden de corte para minimizar desperdicio y número de bloques necesarios por día
+## Backlog
+- Turning time calculation per puck type (second dimension of workload)
+- UI with file picker (currently using `today\` folder as simulation)
+- `pyproject.toml` and `pip install -e .` to solve the imports issue
+- Convert to `.exe` with PyInstaller (include GUI with tkinter)
+- Windows 7 compatibility: evaluate using Python 3.8 to generate the `.exe`
+- Cut optimization: given 2400mm blocks and 20mm excess per cut, calculate cut order to minimize waste and number of blocks needed per day
 
-## Reglas de colaboración
-Ver `CLAUDE.md` para el enfoque de enseñanza completo.
+## Collaboration rules
+See `CLAUDE.md` for the complete teaching approach.

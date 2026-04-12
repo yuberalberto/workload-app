@@ -1,4 +1,4 @@
-"""Procesa archivos PDF de órdenes entrantes y calcula métricas de EPS y holeformers."""
+"""Processes incoming order PDF files and calculates EPS and holeformer metrics."""
 
 from pathlib import Path
 from math import ceil
@@ -12,7 +12,7 @@ pdf_files = today_dir.glob("*.pdf")
 
 
 def main():
-    """Procesa los PDF de today y calcula el total de EPS y el score."""
+    """Processes today's PDFs and calculates total EPS and score."""
     total_eps = 0
     total_pieces = 0
     holeformer_counts = {}

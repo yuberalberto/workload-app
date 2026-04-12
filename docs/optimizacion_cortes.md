@@ -1,36 +1,36 @@
-# Optimización de cortes — Investigación
+# Cut optimization — Research
 
-## Problema
+## Problem
 
-Dado un conjunto de piezas con longitudes conocidas, determinar:
-1. El orden de corte que minimiza el desperdicio de material
-2. Cuántos bloques se necesitan en el día
+Given a set of pieces with known lengths, determine:
+1. The cut order that minimizes material waste
+2. How many blocks are needed for the day
 
-## Parámetros
+## Parameters
 
-- **Longitud de bloque:** 2400mm
-- **Exceso por corte:** 20mm (se suma a cada pieza)
-- **Bloque iniciado:** puede haber un bloque ya en uso en la máquina, con longitud disponible menor a 2400mm
+- **Block length:** 2400mm
+- **Excess per cut:** 20mm (added to each piece)
+- **Started block:** there may be a block already in use on the machine, with less than 2400mm of available length
 
-## Algoritmo recomendado: First Fit Decreasing (FFD)
+## Recommended algorithm: First Fit Decreasing (FFD)
 
-Es un algoritmo clásico de **bin packing** — cómo meter piezas en contenedores minimizando espacio desperdiciado.
+A classic **bin packing** algorithm — how to fit pieces into containers minimizing wasted space.
 
-### Pasos
-1. Ordenar todas las piezas de mayor a menor longitud
-2. Para cada pieza, buscar el primer bloque donde quepa (`longitud_pieza + 20mm`)
-3. Si no cabe en ningún bloque existente, abrir un bloque nuevo
-4. El bloque iniciado en la máquina se agrega primero con su longitud disponible real
+### Steps
+1. Sort all pieces from largest to smallest
+2. For each piece, find the first block where it fits (`piece_length + 20mm`)
+3. If it doesn't fit in any existing block, open a new block
+4. The started block on the machine is added first with its real available length
 
-### Ventajas
-- Simple de implementar
-- Da resultados cercanos al óptimo en la práctica
-- Maneja bien el caso del bloque ya iniciado
+### Advantages
+- Simple to implement
+- Gives results close to optimal in practice
+- Handles the started block case well
 
-### Limitaciones
-- No garantiza el óptimo matemático (para eso existen algoritmos exactos, pero son más lentos y complejos)
-- Para el volumen de trabajo diario de este proyecto, FFD es suficiente
+### Limitations
+- Does not guarantee the mathematical optimum (exact algorithms exist for that, but are slower and more complex)
+- For the daily work volume of this project, FFD is sufficient
 
-## Referencias
+## References
 - [Bin packing problem — Wikipedia](https://en.wikipedia.org/wiki/Bin_packing_problem)
-- [First Fit Decreasing — explicación](https://en.wikipedia.org/wiki/First-fit-decreasing_bin_packing)
+- [First Fit Decreasing — explanation](https://en.wikipedia.org/wiki/First-fit-decreasing_bin_packing)
