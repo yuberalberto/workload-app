@@ -1,29 +1,44 @@
 # Session context — workload_app
 
 ## What we are building
-A Python CLI that reads PDFs from production orders, extracts material data, and returns a workload score (low/medium/high/critical).
+A Python CLI that reads KUKA robot `.src` files from production orders, extracts material data and milling trajectory, and returns a workload score (low/medium/high/critical) plus estimated milling time.
 
 ## Business context
 The user produces EPS molds for concrete manhole casting. Each PDF represents an order with:
 - **Puck** — the main piece. Has an `EPSØxH` field with two values: diameter and height. The height is what adds to the total material.
 - **Holeformers** — small pieces (inlet/outlet). They appear in the `Connectionstype` field with format `525-21"Concrete` or `200-8"PVCSDR`. Only the number and type (PVC or Concrete) matter.
 
-**Real PDFs at:** `C:\Users\yuber\OneDrive\Documents\kuka\Incoming Orders\today\`
-The day's PDFs are placed manually in the `today\` folder to simulate work assignment.
+**Real files at:** `C:\Users\yuber\OneDrive\Documents\kuka\Incoming Orders\today\`
+Each order produces one `.src` file and one PDF — they always come together. The `.src` is the primary source since it contains all needed data (EPS height, holeformers, milling trajectory) and is required for production.
+The day's files are placed manually in the `today\` folder to simulate work assignment.
 
 ## File structure
 ```
 src/workload_app/
     __init__.py           — empty, marks the package
-    pdf_extract.py        — extracts data from the PDF (eps_height + holeformers)
+    src_extract.py        — extracts data from the .src file (eps_height, holeformers, milling trajectory)
     scoring.py            — receives total mm and returns workload level
     holeformers_chart.py  — holeformer conversion table
     cli.py                — coordinates everything, displays result
 tests/
     explore_pdf.py        — scratch file for exploration/testing
+docs/
+    investigacion_kuka_tiempo.md  — research doc: milling time estimation method
+    EPS_2_25252_PD2_A_20250910061714.src  — sample .src file for reference
 ```
 
 ## Current state of each file
+
+### pdf_extract.py — DEPRECATED
+Replaced by `src_extract.py`. Do not use.
+
+### src_extract.py — PENDING
+Will replace `pdf_extract.py`. Must extract from `.src` files:
+- `eps_height` → from comment line `;QRS#18=1002,5` (line after `;QRS#17=EPS Height`)
+- `holeformers` → from comment lines `;QRS#2=675-27" Concrete`, `;QRS#3=375-15" PVC SDR 35`, etc.
+- `trajectory` → sum of Euclidean distances between consecutive `LIN` points (X, Y, Z)
+
+Milling time formula: `time = trajectory / 60.7` (mm/s, deduced from timed reference MHDR11)
 
 ### scoring.py — COMPLETE
 ```python
@@ -107,10 +122,13 @@ if __name__ == "__main__":
 Run with: `cd src && ../.venv/Scripts/python.exe -m workload_app.cli`
 
 ## Next step
-Improve the output to make it more readable (currently prints raw).
+Migrate data extraction from PDF to `.src` files:
+1. Create `src_extract.py` with three functions: extract EPS height, holeformers, and milling trajectory
+2. Update `cli.py` to use `src_extract.py` instead of `pdf_extract.py`
+3. Display milling time in the workload report output
 
 ## Backlog
-- Turning time calculation per puck type (second dimension of workload)
+- Milling time display in workload report (trajectory / 60.7 mm/s, already researched in docs/)
 - UI with file picker (currently using `today\` folder as simulation)
 - `pyproject.toml` and `pip install -e .` to solve the imports issue
 - Convert to `.exe` with PyInstaller (include GUI with tkinter)
