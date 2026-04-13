@@ -2,7 +2,7 @@
 
 from pathlib import Path
 from math import ceil
-from workload_app.pdf_extract import extract_puck_data
+from workload_app.extract_piece_data import extract_puck_data
 from workload_app.scoring import get_score
 from workload_app.holeformers_chart import HOLEFORMERS_CHART
 

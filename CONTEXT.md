@@ -32,11 +32,17 @@ docs/
 ### pdf_extract.py — DEPRECATED
 Replaced by `src_extract.py`. Do not use.
 
-### src_extract.py — PENDING
-Will replace `pdf_extract.py`. Must extract from `.src` files:
-- `eps_height` → from comment line `;QRS#18=1002,5` (line after `;QRS#17=EPS Height`)
-- `holeformers` → from comment lines `;QRS#2=675-27" Concrete`, `;QRS#3=375-15" PVC SDR 35`, etc.
-- `trajectory` → sum of Euclidean distances between consecutive `LIN` points (X, Y, Z)
+### extract_piece_data.py — IN PROGRESS
+Replaces `pdf_extract.py`. Function `extract_puck_data(file_path)` reads `.src` files and returns `(eps_height, holeformers, trajectory)`.
+
+Current state:
+- `eps_height` ✓ — extracted using flag pattern on `;QRS#17=EPS Height` / `;QRS#18=value`
+- `holeformers` — partially done. Regex captures matches but normalization of type is pending:
+  - Raw capture: `('200', 'PVC SDR 35 Cut Back')` 
+  - Should normalize to: `('200', 'PVC Cut Back')`, `('200', 'PVC')`, or `('525', 'Concrete')`
+  - Next step: loop through matches with `for`, normalize tipo, append to list
+  - In `cli.py`: when looking up chart, strip Cut Back → use `"PVC"` as key
+- `trajectory` — not started yet (0.0 placeholder)
 
 Milling time formula: `time = trajectory / 60.7` (mm/s, deduced from timed reference MHDR11)
 
@@ -122,10 +128,10 @@ if __name__ == "__main__":
 Run with: `cd src && ../.venv/Scripts/python.exe -m workload_app.cli`
 
 ## Next step
-Migrate data extraction from PDF to `.src` files:
-1. Create `src_extract.py` with three functions: extract EPS height, holeformers, and milling trajectory
-2. Update `cli.py` to use `src_extract.py` instead of `pdf_extract.py`
-3. Display milling time in the workload report output
+Complete `extract_piece_data.py`:
+1. Normalize holeformer types — loop through `matches`, normalize tipo to `"PVC"`, `"PVC Cut Back"`, or `"Concrete"`, append `(size, tipo)` to list
+2. Extract trajectory — sum Euclidean distances between consecutive `LIN` points (X, Y, Z)
+3. Update `cli.py` to import from `extract_piece_data` instead of `pdf_extract`, handle Cut Back in chart lookup, and display milling time
 
 ## Backlog
 - Milling time display in workload report (trajectory / 60.7 mm/s, already researched in docs/)

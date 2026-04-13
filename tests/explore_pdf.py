@@ -10,7 +10,7 @@
 # with pdfplumber.open(r"C:\Users\yuber\OneDrive\Documents\kuka\Incoming Orders\today\EPS_2_25716_MHFD01A_B_20260324014243.pdf") as pdf:
 #     page = pdf.pages[0]
 #     text = page.extract_text()
-            
+
 #     for line in text.split("\n"):
 #         if "Connectionstype" in line:
 #             print(line)
@@ -18,9 +18,12 @@
 #             print(matches)
 
 import sys
-from workload_app.pdf_extract import extract_puck_data
+
 
 sys.path.insert(0, ".")
+from workload_app.extract_piece_data import extract_puck_data
 
-extracted_data = extract_puck_data(r"C:\Users\yuber\OneDrive\Documents\kuka\Incoming Orders\today\EPS_2_25716_MHFD01A_B_20260324014243.pdf")
+extracted_data = extract_puck_data(
+    r"C:\Users\yuber\OneDrive\Documents\kuka\Incoming Orders\today\EPS_2_26115_SA6997_A_20260219035528.src"
+)
 print(extracted_data)
