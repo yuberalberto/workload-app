@@ -1,9 +1,17 @@
-def get_score(total):
-    if total < 5000:
+THRESHOLDS = {
+    8: (5000, 8000, 10000),
+    9: (6000, 9000, 11000),
+}
+
+
+def get_effort(total, shift=8):
+    """Returns effort level based on total EPS and shift duration (8 or 9 hours)."""
+    low, medium, high = THRESHOLDS.get(shift, THRESHOLDS[8])
+    if total < low:
         return "low"
-    elif total >= 5000 and total < 8000:
+    elif total < medium:
         return "medium"
-    elif total >= 8000 and total < 10000:
+    elif total < high:
         return "high"
     else:
         return "critical"
