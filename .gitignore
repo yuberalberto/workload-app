@@ -13,3 +13,4 @@ BACKUP/
 .venv38/
 *.spec
 *.src
+*.pdf
