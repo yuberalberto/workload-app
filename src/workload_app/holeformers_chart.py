@@ -16,9 +16,9 @@ HOLEFORMERS_CHART = {
     ("300", "Concrete"): {"length": 300, "per_sheet": 4},
     ("375", "Concrete"): {"length": 300, "per_sheet": 4},
     ("450", "Concrete"): {"length": 325, "per_sheet": 1},
-    ("525", "Concrete"): {"length": 400, "per_sheet": 1},
-    ("600", "Concrete"): {"length": 400, "per_sheet": 1},
-    ("675", "Concrete"): {"length": 400, "per_sheet": 1},
+    ("525", "Concrete"): {"length": 430, "per_sheet": 1},
+    ("600", "Concrete"): {"length": 430, "per_sheet": 1},
+    ("675", "Concrete"): {"length": 430, "per_sheet": 1},
     ("750", "Concrete"): {"length": 450, "per_sheet": 1},
     ("825", "Concrete"): {"length": 525, "per_sheet": 1},
 }

@@ -81,6 +81,7 @@ class WorkloadApp(tk.Tk):
         top_frame.pack(fill="x", padx=10, pady=(10, 5))
 
         tk.Button(top_frame, text="Select folder", command=self._select_folder).pack(side="left")
+        tk.Button(top_frame, text="↺ Refresh", command=self._refresh_folder).pack(side="left", padx=(4, 0))
         self.folder_label = tk.Label(top_frame, text="No folder selected", anchor="w")
         self.folder_label.pack(side="left", padx=10)
         self.count_label = tk.Label(top_frame, text="", anchor="w", fg="gray")
@@ -177,6 +178,10 @@ class WorkloadApp(tk.Tk):
     def _normalize(self, text):
         """Removes dots, dashes and spaces for loose structure matching."""
         return text.replace(".", "").replace("-", "").replace(" ", "").lower()
+
+    def _refresh_folder(self):
+        if self.folder_path:
+            self._load_folder(self.folder_path)
 
     def _select_folder(self):
         folder = filedialog.askdirectory()
