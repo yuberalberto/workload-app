@@ -1,9 +1,28 @@
 """Tkinter GUI for the workload analysis tool."""
 
+import sys
+import json
 import tkinter as tk
 from tkinter import filedialog, messagebox
 from pathlib import Path
 from workload_app.cli import analyze
+from workload_app.version import __version__
+
+def _config_path():
+    base = Path(sys.executable).parent if getattr(sys, "frozen", False) else Path(__file__).parent
+    return base / "config.json"
+
+def _load_config():
+    try:
+        return json.loads(_config_path().read_text())
+    except Exception:
+        return {}
+
+def _save_config(data):
+    try:
+        _config_path().write_text(json.dumps(data))
+    except Exception:
+        pass
 
 
 class WorkloadApp(tk.Tk):
@@ -11,8 +30,9 @@ class WorkloadApp(tk.Tk):
 
     def __init__(self):
         super().__init__()
-        self.title("OMNI - Milling Workload Analyzer  |  by Yuber Mina")
+        self.title(f"OMNI - Milling Workload Analyzer v{__version__}  |  by Yuber Mina")
         self.resizable(True, True)
+        self.state("zoomed")
 
         self.folder_path = None
         self.all_files = []          # All .src files in the selected folder
@@ -21,6 +41,10 @@ class WorkloadApp(tk.Tk):
 
         self._build_menu()
         self._build_ui()
+
+        last_folder = _load_config().get("last_folder")
+        if last_folder and Path(last_folder).is_dir():
+            self._load_folder(Path(last_folder))
 
     def _build_menu(self):
         menubar = tk.Menu(self)
@@ -34,7 +58,7 @@ class WorkloadApp(tk.Tk):
         win.title("About OMNI")
         win.resizable(False, False)
         text = (
-            "OMNI - Milling Workload Analyzer\n"
+            f"OMNI - Milling Workload Analyzer v{__version__}\n"
             "\n"
             "About this tool:\n"
             "Reads KUKA robot .src files, extracts EPS height,\n"
@@ -158,7 +182,11 @@ class WorkloadApp(tk.Tk):
         folder = filedialog.askdirectory()
         if not folder:
             return
-        self.folder_path = Path(folder)
+        self._load_folder(Path(folder))
+        _save_config({"last_folder": str(self.folder_path)})
+
+    def _load_folder(self, path):
+        self.folder_path = path
         self.folder_label.config(text=str(self.folder_path))
         self.all_files = sorted(self.folder_path.glob("*.src"), key=lambda f: f.name)
         self.count_label.config(text=f"({len(self.all_files)} .src files found)")

@@ -6,7 +6,8 @@ from workload_app.extract_piece_data import extract_puck_data
 from workload_app.scoring import get_effort
 from workload_app.holeformers_chart import HOLEFORMERS_CHART
 
-MILLING_SPEED = 56.45  # mm/s — average deduced from MHDR11 and MHDA02 real measurements
+OVERHEAD_MIN = 4.8      # fixed overhead per program, minutes (regression intercept — 7 files empirical)
+SPEED_MIN_PER_M = 0.28  # minutes per meter of trajectory (regression slope)
 
 today_dir = Path(r"C:\Users\yuber\OneDrive\Documents\kuka\Incoming Orders\today")
 
@@ -15,7 +16,7 @@ def analyze(src_files, shift=8):
     """Analyzes a list of .src file paths and returns a workload report string."""
     total_eps = 0
     total_pieces = 0
-    total_trajectory = 0.0
+    total_milling_min = 0.0
     holeformer_counts = {}
     errors = []
 
@@ -23,7 +24,7 @@ def analyze(src_files, shift=8):
         try:
             eps_height, holeformers, trajectory = extract_puck_data(src_file)
             total_eps += eps_height + 20  # Add 20mm as a cutting allowance for the puck
-            total_trajectory += trajectory
+            total_milling_min += SPEED_MIN_PER_M * (trajectory / 1000) + OVERHEAD_MIN
             total_pieces += 1
             for holeformer in holeformers:
                 holeformer_counts[holeformer] = holeformer_counts.get(holeformer, 0) + 1
@@ -40,9 +41,9 @@ def analyze(src_files, shift=8):
 
     effort = get_effort(total_eps, shift)
     required_blocks = ceil(total_eps / 2400)  # Each block is 2400mm length
-    milling_seconds = total_trajectory / MILLING_SPEED
-    milling_hours = int(milling_seconds // 3600)
-    milling_minutes = int((milling_seconds % 3600) // 60)
+    milling_hours = int(total_milling_min // 60)
+    milling_minutes = int(total_milling_min % 60)
+    milling_pct = total_milling_min / (shift * 60) * 100
 
     holeformers_list = ""
     for holeformer, count in holeformer_counts.items():
@@ -55,7 +56,7 @@ def analyze(src_files, shift=8):
         f"Orders processed : {total_pieces}\n"
         f"Shift            : {shift}h\n"
         f"Effort           : {effort}\n"
-        f"Milling time     : {milling_hours}h {milling_minutes}min\n"
+        f"Sim. milling time: {milling_hours}h {milling_minutes}min ({milling_pct:.0f}% of shift)\n"
         "-----------------------------\n"
         f"Total EPS        : {total_eps} mm\n"
         f"Blocks needed    : {required_blocks}\n"

@@ -14,3 +14,4 @@ BACKUP/
 *.spec
 *.src
 *.pdf
+config.json
